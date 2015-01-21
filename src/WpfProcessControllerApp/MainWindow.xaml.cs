@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Runtime.Serialization.Formatters.Binary;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
@@ -13,7 +14,6 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
-using System.Windows.Shapes;
 using Knightware.IO.Devices;
 
 namespace WpfProcessControllerApp
@@ -21,15 +21,16 @@ namespace WpfProcessControllerApp
     public partial class MainWindow : Window
     {
         private KBoardDevice kBoard;
-        private List<ButtonFunction> buttonFunctions;
-        private readonly string configFile;
+        private ConfigFile config;
 
         public MainWindow()
         {
             InitializeComponent();
 
-            //TODO:  Load from file
-            buttonFunctions = new List<ButtonFunction>();
+            string configFile = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "KBoardController", "config.bin");
+            config = new ConfigFile(configFile);
+            if (!config.Load())
+                MessageBox.Show(this, "Failed to load config file", "Failed to load", MessageBoxButton.OK, MessageBoxImage.Warning);
 
             kBoard = new KBoardDevice();
             if(!kBoard.Startup(OnKeyPressed, OnBendChanged))
@@ -39,6 +40,8 @@ namespace WpfProcessControllerApp
                 kBoard = null;
             }
         }
+
+        
 
         private void OnKeyPressed(object sender, KBoardKeyPressEventArgs e)
         {
@@ -69,6 +72,11 @@ namespace WpfProcessControllerApp
 
         private void window_closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
+            if(!config.Save())
+            {
+                MessageBox.Show(this, "Failed to save config", "Error Saving", MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
+
             if(kBoard != null)
             {
                 kBoard.Shutdown();
@@ -99,7 +107,7 @@ namespace WpfProcessControllerApp
         {
                 Dispatcher.BeginInvoke((Action)(() =>
                 {
-                    ButtonFunction function = buttonFunctions.FirstOrDefault(b => b.KeyID == keyID);
+                    ButtonFunction function = config.ButtonFunctions.FirstOrDefault(b => b.KeyID == keyID);
 
                     if (rbConfigMode.IsChecked.GetValueOrDefault())
                     {
@@ -107,7 +115,7 @@ namespace WpfProcessControllerApp
                         if(function == null)
                         {
                             function = new ButtonFunction() { KeyID = keyID };
-                            buttonFunctions.Add(function);
+                            config.ButtonFunctions.Add(function);
                         }
                         configGrid.DataContext = function;
                     }

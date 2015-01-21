@@ -1,15 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
+using System.Runtime.CompilerServices;
+using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace WpfProcessControllerApp
 {
-    [Serializable]
-    public class ButtonFunction : PropertyChangedBase
+    [DataContract]
+    public class ButtonFunction : INotifyPropertyChanged
     {
-        private bool startNewInstanceIfAlreadyRunning;
+        [DataMember]
         public bool StartNewInstanceIfAlreadyRunning
         {
             get { return startNewInstanceIfAlreadyRunning; }
@@ -22,8 +25,9 @@ namespace WpfProcessControllerApp
                 }
             }
         }
+        private bool startNewInstanceIfAlreadyRunning;
 
-        private int keyid;
+        [DataMember]
         public int KeyID
         {
             get { return keyid; }
@@ -36,8 +40,9 @@ namespace WpfProcessControllerApp
                 }
             }
         }
+        private int keyid;
 
-        private string programName;
+        [DataMember]
         public string ProgramName
         {
             get { return programName; }
@@ -50,8 +55,9 @@ namespace WpfProcessControllerApp
                 }
             }
         }
+        private string programName;
 
-        private string programArguments;
+        [DataMember]
         public string ProgramArguments
         {
             get { return programArguments; }
@@ -64,6 +70,13 @@ namespace WpfProcessControllerApp
                 }
             }
         }
+        private string programArguments;
 
+        public event PropertyChangedEventHandler PropertyChanged;
+        protected void OnPropertyChanged([CallerMemberName]string propertyName = null)
+        {
+            if (PropertyChanged != null)
+                PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
+        }
     }
 }

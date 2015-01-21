@@ -67,7 +67,7 @@
 
                         <TextBlock Margin="0,8,0,0"
                                    Text="Program Arguments (Optional)"/>
-                        <TextBox HorizontalAlignment="Stretch" Text="{Binding Path=ProgramArguments, Mode=TwoWay}"/>
+                        <TextBox HorizontalAlignment="Stretch" Text="{Binding Path=ProgramArguments, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
                         
                         <CheckBox Content="Start new instance if already running"
                                   Margin="0,8,0,0"
